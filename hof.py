@@ -49,20 +49,6 @@ class Functor(object):
 def curry(func):
     return Functor(func)
 
-@curry
-def add(x, y):
-    return x + y
-@curry
-def sub(x, y):
-    return y - x
-
-@curry
-def div(x, y):
-    return y/x
-
-@curry
-def mul(x, y):
-    return x*y
 
 
 #############################
@@ -838,29 +824,7 @@ def iterate(function, x):
 
 
 
-def sliding_window(array, k):
-    """
-    A sequence of overlapping subsequences
 
-    Example:
-
-    >>> from m2py import functional as f
-    >>>
-    >>> x = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9']
-    >>>
-    >>> print(f.sliding_window(x, 1))
-    [('x0',), ('x1',), ('x2',), ('x3',), ('x4',), ('x5',), ('x6',), ('x7',), ('x8',), ('x9',)]
-    >>>
-    >>> print(f.sliding_window(x, 2))
-    [('x0', 'x1'), ('x1', 'x2'), ('x2', 'x3'), ('x3', 'x4'), ('x4', 'x5'), ('x5', 'x6'), ('x6', 'x7'), ('x7', 'x8'), ('x8', 'x9')]
-    >>>
-    >>> print(f.sliding_window(x, 3))
-    [('x0', 'x1', 'x2'), ('x1', 'x2', 'x3'), ('x2', 'x3', 'x4'), ('x3', 'x4', 'x5'), ('x4', 'x5', 'x6'), ('x5', 'x6', 'x7'), ('x6', 'x7', 'x8'), ('x7', 'x8', 'x9')]
-    >>>
-
-    Note: http://toolz.readthedocs.org/en/latest/api.html#toolz.itertoolz.sliding_window
-    """
-    return list(zip(*[array[i:] for i in range(k)]))
 
 
 
@@ -1003,17 +967,7 @@ def reverse(array):
 
 
 
-def nth(array, n):
-    """
 
-    nth(N, List) -> Elem
-
-    > lists:nth(3, [a, b, c, d, e]).
-    c
-
-    Idea from: http://erldocs.com/17.3/stdlib/lists.html
-    """
-    return array[n]
 
 
 def inc(x):

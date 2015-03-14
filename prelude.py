@@ -35,12 +35,65 @@ from functools import reduce
 
 import time
 
+
+class CurriedFunction(object):
+    
+    def __init__(self, funct, argvalues=[]):
+    
+        self.funct = funct
+        self.nargs = self.funct.__code__.co_argcount
+        self.argvalues = argvalues
+        #self.__doc__ = f.__doc__
+    
+    def __call__(self, *args):
+              
+        argvalues = self.argvalues.copy()
+        argvalues.extend(args)
+        
+        #print(argvalues)        
+        #print(self.nargs)
+        
+        if len(argvalues) == self.nargs:
+            
+            return  self.funct(*argvalues)
+        
+        elif len(argvalues) > self.nargs:
+            raise TypeError("Wrong number of arguments")
+        
+        else:
+            newfunctor = CurriedFunction(self.funct, argvalues)
+            return newfunctor            
+        
+def curry(function):
+    return CurriedFunction(function)
+
+
 to_list   =  list     # Convert generator to list
 to_tuple  =  tuple    # Convert gernerator to tuple
 to_stream =  iter     # Convert iterable object to generator
 
-
 reverse = reversed
+
+
+@curry
+def add(x, y):
+    return x + y
+@curry
+def sub(x, y):
+    return y - x
+
+@curry
+def div(x, y):
+    return y/x
+
+@curry
+def mul(x, y):
+    return x*y
+
+@curry
+def pow(x, y):
+    return x**y
+
 
 # curry :: ((a, b) -> c) -> a -> b -> c
 
@@ -77,6 +130,9 @@ def take(n, iterable):
         except:
             pass
 
+
+def foldr(function, initial, iterable):
+    return reduce(function, iterable, initial)
        
 def takeWhile(predicate, stream):
             
@@ -219,83 +275,83 @@ def profile(function):
     return _
     
 
-class List(object):
-    """
-    List Monad
-    
-    """
-    
-    def __init__(self, value):
-        self.value = value
-        
-    def bind(self, function):
-        return List(function(self.value))
-        
-    def filter(self, predicate):
-        return List(filter(predicate, self.value))
-    
-    def reject(self, predicate):
-        return List(filter(lambda x: not predicate(x), self.value))
-    
-    def fold(self, initial_value, function):
-        return List(reduce(function, self.value, initial_value))
-    
-    
-    def get(self, attribute):
-        return self.map(lambda x: getattr(x, attribute))
-    
-    def getkey(self, key):
-        return self.map(lambda x: x.git(key))
-    
-    def to_list(self):
-        return list(self.value)
-    
-    def to_tuple(self):
-        return tuple(self.value)
-        
-    def iter(self):
-        return List(iter(self.value))
-    
-    def reverse(self):
-        return List(reversed(self.value))
-        
-    def map(self, function):
-        return List(map(function, self.value))
-    
-    
-    def tail(self):
-        return List(tail(self.value))
-    
-    def last(self):
-        return last(self.value)
-    
-    def head(self):
-        return head(self.value)
-    
-    def zip(self, sequence):
-        return List(zip(self.value, sequence))
-    
-    def zipwith(self, function, sequence):
-        return List(zipWith(function, self.value, sequence))
-        
-    def take(self, n):
-        return List(iter(take(n, self.value)))
-        
-    def takewhile(self, predicate):
-        return List(takeWhile(predicate, self.value))
-        
-    def pairs(self):
-        return List(pairs(self.value))
-    
-    def column(self, n):
-        return self.map(lambda x: x[n])
-        
-    def foreach(self, function):
-        foreach(function, self.value)
 
-f = lambda a: lambda x: 0.5*(a/x + x)    
+@curry
+def call_with(arguments, function):  
+    """
+    Example:
+        
+        >>> def f(x, y): return x*y - 10*x/y
+        >>> call_with((2, 4))
+        <__main__.CurriedFunction at 0xb254f0ac>
+        
+        >>> call1 = call_with((2, 4))
+
+        >>> call2 = call_with((6, 8))
+
+        >>> call1(f)
+        3.00000
+
+        >>> call2(f)
+        40.50000
+
+        >>> list(map(call1, (f, f2)))
+        [3.00000, 6]
+
+        >>> list(map(call2, (f, f2)))
+        [40.50000, 14]
+            
+    """
+    return function(*arguments)
+    
+
+
+def sliding_window(array, k):
+    """
+    A sequence of overlapping subsequences
+
+    Example:
+
+    >>> from m2py import functional as f
+    >>>
+    >>> x = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9']
+    >>>
+    >>> print(f.sliding_window(x, 1))
+    [('x0',), ('x1',), ('x2',), ('x3',), ('x4',), ('x5',), ('x6',), ('x7',), ('x8',), ('x9',)]
+    >>>
+    >>> print(f.sliding_window(x, 2))
+    [('x0', 'x1'), ('x1', 'x2'), ('x2', 'x3'), ('x3', 'x4'), ('x4', 'x5'), ('x5', 'x6'), ('x6', 'x7'), ('x7', 'x8'), ('x8', 'x9')]
+    >>>
+    >>> print(f.sliding_window(x, 3))
+    [('x0', 'x1', 'x2'), ('x1', 'x2', 'x3'), ('x2', 'x3', 'x4'), ('x3', 'x4', 'x5'), ('x4', 'x5', 'x6'), ('x5', 'x6', 'x7'), ('x6', 'x7', 'x8'), ('x7', 'x8', 'x9')]
+    >>>
+
+    Note: http://toolz.readthedocs.org/en/latest/api.html#toolz.itertoolz.sliding_window
+    """
+    return zip(*[array[i:] for i in range(k)])
+
+
+@curry
+def nth(n, stream):
+    """
+
+    nth(N, List) -> Elem
+
+    > lists:nth(3, [a, b, c, d, e]).
+    c
+
+    Idea from: http://erldocs.com/17.3/stdlib/lists.html
+    """
+    i = 0
+    while i < n:
+        next(stream) # Consume stream
+        i += 1
+    return next(stream)
     
         
+        
+
+#---------------------------------------------------#
 
 def until_converge(stream, eps, itmax):
     
