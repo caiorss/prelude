@@ -32,8 +32,10 @@ n =  6200
 
 """
 from functools import reduce
-
+import itertools
 import time
+
+
 
 
 class CurriedFunction(object):
@@ -74,16 +76,88 @@ to_stream =  iter     # Convert iterable object to generator
 
 reverse = reversed
 
+#############################
+#   TYPE CHECKING           #
+#############################
+
+
+
+def is_list(var):
+    """
+    Test if variable var is list
+
+    :return: True if var is list, False if var is not list
+    :rtype:  bol
+    """
+    return isinstance(var, list)
+
+
+def is_tuple(var):
+    return isinstance(var, tuple)
+
+
+def is_num(var):
+    """
+    Test if variable var is number (int or float)
+
+    :return: True if var is number, False otherwise.
+    :rtype:  bol
+    """
+    return isinstance(var, int) or isinstance(var, float)
+
+
+def is_dict(var):
+    return isinstance(var, dict)
+
+
+def is_string(var):
+    return isinstance(var, str)
+
+
+def is_function(var):
+    """
+    Test if variable is function (has a __call__ attribute)
+
+    :return: True if var is function, False otherwise.
+    :rtype:  bol
+    """
+    return hasattr(var, '__call__')
+
+
+def is_none(var):
+    return var is None
+
+
+def is_empty(lst):
+    return not lst
+
+
+def is_finite(x):
+    return NEGINF < x < POSINF
+
+
+def is_pos(x):
+    return x > 0
+
+
+def is_neg(x):
+    return x < 0
+
+
+#############################
+#   OPERATORS               #
+#############################
+
 
 @curry
 def add(x, y):
     return x + y
 @curry
-def sub(x, y):
+def sub(y, x):
     return y - x
 
 @curry
-def div(x, y):
+def div(y, x):
     return y/x
 
 @curry
@@ -94,6 +168,11 @@ def mul(x, y):
 def pow(x, y):
     return x**y
 
+
+@curry
+def contains(lst, value):
+    return value in lst
+    
 
 # curry :: ((a, b) -> c) -> a -> b -> c
 
@@ -160,6 +239,15 @@ def dropWhile(predicate, stream):
             except StopIteration:
                 break
 
+
+
+def flat(stream):
+    return itertools.chain(*stream)
+
+
+@curry
+def flat_mapl(function, stream):
+    return flat(map(function, stream))
 
 
 def iterate(f, x):
@@ -240,6 +328,45 @@ def allmap(predicate, iterable):
 def anymap(predicate, iterable):    
     return any(map(predicate, iterable))
 
+@curry
+def mapf(function, stream):
+    return map(function, stream)
+
+@curry
+def filterf(function, stream):
+    return filter(function, stream)
+
+@curry
+def starmap(function, arglist):
+    """
+    map tuple
+    
+    Map list of function arguments to the function
+
+    :param function: Function of tuples
+    :param arglist:  List of arguments of f
+    :return:         list of results
+
+    Let be
+        function: f( a, b, c, d, ...)
+        arglist :  [ (a0, b0, c0, ...), (ak, bk, ck, ...), ... ]
+
+        Xk = [ ak, bk, ck, ... ]
+        return [ f(X0), f(X1), ... f(Xn)]
+
+    Example:
+
+    >>> from m2py import functional as f
+    >>>
+    >>> x= [ (0, 2, 4), (-3, 4, 8), (4, 2, 5), (22, -10, 23)]
+    >>>
+    >>> def fun(a, b, c): return a**2 - 10*b + c
+    ...
+    >>>
+    >>> f.maplx(fun, x)
+    [-16, -23, 1, 607]
+    """
+    return (function(*params) for params in arglist)
 
 def mainf(function):
     """
@@ -274,7 +401,47 @@ def profile(function):
     
     return _
     
+def compose(*funclist):
+    """
+    Returns the composition of a list of functions, where each function
+    consumes the return value of the function that follows. In math terms,
+    composing the functions f()
 
+    :param funclist: List of functiosn [f0, f1, f2, f3, ... fn-1]
+    :return:         New function f(x) = f0(f1(...fn-3(fn-2(fn-1(x))))
+    :type funclist:  list(function)
+    :rtype funclist: function
+
+    Create f(x) such that
+
+    f(x) = (f0.f1.f2...fn-1)(x)
+
+
+    Example:
+
+    Compute inc(double(10)) = 21
+
+    >>>
+    >>> imoort functional as f
+    >>>
+    >>> inc = lambda x: x+1
+    >>> double = lambda x: x*2
+    >>>
+    >>> f.compose(inc, double)(10)
+    21
+    """
+    flist = list(funclist)
+    flist.reverse()
+
+    def _(x):
+        _x = x
+
+        for f in flist:
+            _x = f(_x)
+
+        return _x
+
+    return _
 
 @curry
 def call_with(arguments, function):  
@@ -349,7 +516,351 @@ def nth(n, stream):
     return next(stream)
     
         
+def retry(call, tries, errors=Exception):
+    for attempt in range(tries):
+        try:
+            return call()
+        except errors:
+            if attempt + 1 == tries:
+                raise
+
+
+def ignore(call, errors=Exception):
+    try:
+        return call()
+    except errors:
+        return None
+
+
+def in_sequence(function_list):
+    """
+    Create a new function that execute the functions
+    in the list in sequence.
+
+    :param function_list: List of functions
+    :return:              Function
+
+    """
+
+    def seqfun():
+        for f in function_list: f()
+
+    return seqfun
+
+
+def in_parallel(function_list):
+    """
+    Create a new function that execute the functions
+    in the list in parallel (thread)
+
+    :param function_list: List of functions
+    :return:              Function
+
+    Example:
+
+    >>> from m2py import functional as funcp
+    >>>
+    >>> import time
+    >>>
+    >>> def print_time(thname, delay):
+    ...   for i in range(5):
+    ...      time.sleep(delay)
+    ...      print (thname, " ", time.ctime(time.time()))
+    >>>
+    >>> def make_print_time(name, delay): return lambda : print_time(name, delay)
+    >>>
+    >>> t1 = make_print_time("thread1", 1)
+    >>> t2 = make_print_time("thread2", 2)
+    >>> t3 = make_print_time("thread3", 3)
+    >>> t4 = make_print_time("thread4", 4)
+    >>>
+    >>> thfun = funcp.in_parallel([t1, t2, t3, t4])
+    >>> thfun()
+    >>> thread1   Fri Dec 26 23:40:29 2014
+    thread2   Fri Dec 26 23:40:30 2014
+    thread1   Fri Dec 26 23:40:30 2014
+    thread3   Fri Dec 26 23:40:31 2014
+    thread1   Fri Dec 26 23:40:31 2014
+    thread4   Fri Dec 26 23:40:32 2014
+    thread2   Fri Dec 26 23:40:32 2014
+    thread1   Fri Dec 26 23:40:32 2014
+    thread1   Fri Dec 26 23:40:33 2014
+    ...
+    """
+
+    def pfun():
+        for func in function_list:
+            thread.start_new_thread(func, ())
+
+    return pfun
+
+
+def caller(function, args=(), kwargs=None):
+    """
+    :param function: Function object
+    :pram argds:     Function arguments tuple
+
+    In [11]: def f(x, y): return x+y
+
+    In [12]: call(f, (20, 100))()
+    Out[12]: 120
+
+    In [14]: def f2(): print("hello world")
+
+    In [15]: call(f2)
+    hello world
+    """
+    if not kwargs:
+        kwargs = {}
+    return lambda: function(*args, **kwargs)
+
+
+def call(function, args=(), kwargs=None):
+    if not kwargs:
+        kwargs = {}
+    return function(*args, **kwargs)
+
+
+def unique(lst):
+    """
+    Remove repeated elements from an aray
+    """
+    return sort(set(lst))
+
+
+#---------------------------------------------------#
+
+def to_value():
+    """ Dummy function """
+    pass
+    
+
+class Stream(object):
+    """
+    Stream Monad ( Equivalent to List monaf)
+    
+    >>>  Stream(10.23) >>  (lambda x: x**2) >> (lambda y: y/10) >> to_value 
+    10.46529
+    
+    >>>  Stream(range(8)) >>  mapf(lambda x: x**2) >> mapf(lambda y: y/10) >> to_list 
+    [0.00000, 0.10000, 0.40000, 0.90000, 1.60000, 2.50000, 3.60000, 4.90000]
+    
+    
+    >>>  Stream(range(8)) >>  mapf(add(10)) >> mapf(mul(8.5)) >> to_list    [85.00000,
+    93.50000,
+    102.00000,
+    110.50000,
+    119.00000,
+    127.50000,
+    136.00000,
+    144.50000]
+
+    
+    """
+    
+    def __init__(self, value=None):
+        self.value = value
         
+    def bind(self, function):
+        return Stream(function(self.value))
+         
+    def __rshift__(self, other):
+        
+        
+        if other == to_value:
+            return self.value
+        
+        if other == list:
+            return list(self.value)
+
+        elif hasattr(other, "__call__"):
+            #p = Pipe(list(map(other, self.value)))
+            p = Stream( other(self.value))
+        
+        else:
+            p = Stream(other)
+
+        return p
+
+
+class Operator():
+    """
+    Operator to Generate Lambda expressions
+
+    Scala-style lambdas definition
+
+    Idea from: https://github.com/kachayev/fn.py#fnpy-enjoy-fp-in-python
+
+    Example:
+
+    In [1]: from functional import X, mapl, filterl
+
+    In [2]: list(filter(X  < 10, [9, 10, 11]))
+    Out[2]: [9]
+
+    In [4]: mapl(X ** 2, [1, 2, 3, 4, 5, 6, 7])
+    Out[4]: [1, 4, 9, 16, 25, 36, 49]
+
+    In [2]: mapl(X  / 10, [9, 10, 11])
+    Out[2]: [0.9, 1.0, 1.1]
+
+    In [3]:  mapl( 10/X, [9, 10, 11])
+    Out[3]: [1.1111111111111112, 1.0, 0.9090909090909091]
+
+    """
+
+    """
+    Scala-style lambdas definition
+
+    Idea from: https://github.com/kachayev/fn.py#fnpy-enjoy-fp-in-python
+
+    Example:
+
+    In [1]: from functional import X, mapl, filterl
+
+    In [2]: list(filter(X  < 10, [9, 10, 11]))
+    Out[2]: [9]
+
+    In [4]: mapl(X ** 2, [1, 2, 3, 4, 5, 6, 7])
+    Out[4]: [1, 4, 9, 16, 25, 36, 49]
+
+    In [2]: mapl(X  / 10, [9, 10, 11])
+    Out[2]: [0.9, 1.0, 1.1]
+
+    In [3]:  mapl( 10/X, [9, 10, 11])
+    Out[3]: [1.1111111111111112, 1.0, 0.9090909090909091]
+
+    """
+
+    def __add__(self, other):
+
+        if isinstance(other, Operator):
+            return lambda x, y: x + y
+        return lambda x: x + other
+
+    def __radd__(self, other):
+        if isinstance(other, Operator):
+            return lambda x, y: x + y
+        return lambda x: other + x
+
+    def __mul__(self, other):
+
+        if isinstance(other, Operator):
+            return lambda x, y: x * y
+        return lambda x: x * other
+
+    def __rmul__(self, other):
+
+        if isinstance(other, Operator):
+            return lambda x, y: x * y
+        return lambda x: x * other
+
+
+    def __sub__(self, other):
+        return lambda x: x - other
+
+    def __rsub__(self, other):
+        return lambda x: other - x
+
+
+    def __div__(self, other):
+        return lambda x: x / other
+
+    def __truediv__(self, other):
+        return lambda x: x / other
+
+    def __floordiv__(self, other):
+        return lambda x: x // other
+
+    def __rdiv__(self, other):
+        return lambda x: other / x
+
+    def __rtruediv__(self, other):
+        return lambda x: other / x
+
+    def __rfloordiv__(self, other):
+        return lambda x: other // x
+
+    def __pow__(self, other):
+        return lambda x: x ** other
+
+    def __rpow__(self, other):
+        return lambda x: other ** x
+
+    def __neg__(self):
+        return lambda x: -x
+
+    def __pos__(self):
+        return lambda x: x
+
+    def __abs__(self):
+        return lambda x: abs(x)
+
+    def __len__(self):
+        return lambda x: len(x)
+
+    def __eq__(self, other):
+        return lambda x: x == other
+
+    def __ne__(self, other):
+        return lambda x: x != other
+
+    def __lt__(self, other):
+        return lambda x: x < other
+
+    def __le__(self, other):
+        return lambda x: x <= other
+
+    def __gt__(self, other):
+        return lambda x: x > other
+
+    def __ge__(self, other):
+        return lambda x: x >= other
+
+    def __or__(self, other):
+        return lambda x: x or other
+
+    def __and__(self, other):
+        return lambda x: x and other
+
+    def __rand__(self, other):
+        return lambda x: other and x
+
+    def __ror__(self, other):
+        return lambda x: other or x
+
+    def __contains__(self, item):
+        return lambda x: item in x
+
+    def __int__(self):
+        return lambda x: int(x)
+
+    def __float__(self):
+        return lambda x: float(x)
+
+    def split(self, pattern=' '):
+        return lambda x: x.split(pattern)
+
+    def strip(self):
+        return lambda x: x.strip()
+
+    def map(self, function):
+        return lambda x: list(map(function, x))
+
+    def sum(self):
+        return lambda x: sum(x)
+
+    def key(self, keyname):
+        """Generate lambda expression for dictionary key """
+        return lambda x: x[keyname]
+
+    def item(self, it):
+        """Generate lambda function for list item """
+        return lambda x: x[it]
+
+
+X = Operator()
+
 
 #---------------------------------------------------#
 
