@@ -39,13 +39,23 @@ import time
 
 
 class CurriedFunction(object):
+    """
+    Curried Function Class
+    
+    To see function documentation, enter
+        
+        self.help()
+    """
     
     def __init__(self, funct, argvalues=[]):
     
         self.funct = funct
         self.nargs = self.funct.__code__.co_argcount
         self.argvalues = argvalues
-        #self.__doc__ = f.__doc__
+        
+        #setattr(self, "__doc__", funct.__doc__)
+        
+        self.__doc__ = funct.__doc__
     
     def __call__(self, *args):
               
@@ -65,6 +75,10 @@ class CurriedFunction(object):
         else:
             newfunctor = CurriedFunction(self.funct, argvalues)
             return newfunctor            
+
+
+def help2(obj):
+    print(obj.__doc__)
         
 def curry(function):
     return CurriedFunction(function)
@@ -321,10 +335,11 @@ def infinite_alternate(start=0):
 is_even = lambda n: n % 2 == 0
 is_odd  = lambda n: n % 2 == 1
 
-
+@curry
 def allmap(predicate, iterable):    
     return all(map(predicate, iterable))
-    
+
+@curry    
 def anymap(predicate, iterable):    
     return any(map(predicate, iterable))
 
@@ -335,6 +350,17 @@ def mapf(function, stream):
 @curry
 def filterf(function, stream):
     return filter(function, stream)
+
+
+@curry
+def filterl(function, stream):
+    return list(filter(function, stream))
+
+@curry
+def mapl(function, stream):
+    return list(map(function, stream))
+
+
 
 @curry
 def starmap(function, arglist):
@@ -681,6 +707,10 @@ class Stream(object):
             p = Stream(other)
 
         return p
+        
+    def __lshift__(self, other):
+        
+        return list(other)
 
 
 class Operator():
