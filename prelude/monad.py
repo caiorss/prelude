@@ -147,6 +147,8 @@ class Maybe(object):
         
         (>>=) :: Monad m => m a -> (a -> m b) -> m b
         """
+        if self.is_nothing:
+            return Nothing
         return f_a_to_mb(self.__value)
     
 Just = Maybe

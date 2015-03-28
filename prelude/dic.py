@@ -173,7 +173,7 @@ def lookup(key, dic):
         return Just(dic.get(key))
     else:
         return Nothing
-
+@curry
 def lookup_nested(keys, dic):
     ikeys = iter(keys)
     

@@ -4,15 +4,16 @@
 
 from .prelude import curry
 
-def joinstr(stringsList):    
-    return "".join(stringsList)
+@curry
+def joinstr(strmid, stringsList):    
+    return strmid.join(stringsList)
     
 @curry
 def replace(oldValue, newValue, string):    
     return string.replace(oldValue, newValue)
 
 @curry
-def split(separator, string):
+def splitstr(separator, string):
     return string.split(separator)
     
 @curry    

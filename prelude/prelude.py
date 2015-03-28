@@ -36,8 +36,6 @@ import itertools
 import time
 
 
-
-
 class CurriedFunction(object):
     """
     Curried Function Class
@@ -46,52 +44,54 @@ class CurriedFunction(object):
         
         self.help()
     """
-    
+
     def __init__(self, funct, argvalues=[]):
-    
-        self.funct = funct
-        self.nargs = self.funct.__code__.co_argcount
-        self.argvalues = argvalues
-        
-        #setattr(self, "__doc__", funct.__doc__)
-        
+
+        self._funct = funct
+        self._nargs = self._funct.__code__.co_argcount
+        self._argvs = argvalues
+
+        # setattr(self, "__doc__", _funct.__doc__)
+
         self.__doc__ = funct.__doc__
-    
+
     def __call__(self, *args):
-              
-        argvalues = self.argvalues.copy()
+
+        argvalues = self._argvs.copy()
         argvalues.extend(args)
-        
-        #print(argvalues)        
-        #print(self.nargs)
-        
-        if len(argvalues) == self.nargs:
-            
-            return  self.funct(*argvalues)
-        
-        elif len(argvalues) > self.nargs:
+
+        # print(_argvs)
+        #print(self._nargs)
+
+        if len(argvalues) == self._nargs:
+
+            return self._funct(*argvalues)
+
+        elif len(argvalues) > self._nargs:
             raise TypeError("Wrong number of arguments")
-        
+
         else:
-            newfunctor = CurriedFunction(self.funct, argvalues)
-            return newfunctor            
+            newfunctor = CurriedFunction(self._funct, argvalues)
+            return newfunctor
 
 
 def help2(obj):
     print(obj.__doc__)
-        
+
+
 def curry(function):
     return CurriedFunction(function)
 
 
-to_list   =  list     # Convert generator to list
-to_tuple  =  tuple    # Convert gernerator to tuple
-to_stream =  iter     # Convert iterable object to generator
+to_list = list  # Convert generator to list
+to_tuple = tuple  # Convert gernerator to tuple
+to_stream = iter  # Convert iterable object to generator
 
 reverse = reversed
+reversel = lambda alist: list(reversed(alist))
 
 #############################
-#   TYPE CHECKING           #
+# TYPE CHECKING           #
 #############################
 
 
@@ -124,7 +124,7 @@ def is_dict(var):
     return isinstance(var, dict)
 
 
-def is_string(var):
+def is_str(var):
     return isinstance(var, str)
 
 
@@ -146,16 +146,8 @@ def is_empty(lst):
     return not lst
 
 
-def is_finite(x):
-    return NEGINF < x < POSINF
-
-
-def is_pos(x):
-    return x > 0
-
-
-def is_neg(x):
-    return x < 0
+def is_gen(x):
+    return hasattr(x, "__next__")
 
 
 #############################
@@ -166,93 +158,87 @@ def is_neg(x):
 @curry
 def add(x, y):
     return x + y
+
+
 @curry
 def sub(y, x):
     return y - x
 
+
 @curry
 def div(y, x):
-    return y/x
+    return y / x
+
 
 @curry
 def mul(x, y):
-    return x*y
+    return x * y
+
 
 @curry
 def pow(x, y):
-    return x**y
+    return x ** y
 
 
 @curry
 def contains(lst, value):
     return value in lst
-    
+
 
 # curry :: ((a, b) -> c) -> a -> b -> c
 
 def identity(x):
     return x
-    
-def const(constant):    
+
+
+def constant(constant):
     return lambda *args, **kwargs: constant
 
-def curry2(func):
-    return lambda a, b: f((a, b))
 
-def curry3(func):
-    return lambda a, b, c: func((a, b, c))
+def uncurry(function):
+    return lambda atuple: function(*atuple)
 
-def uncurry2(func):
-    """     uncurry :: (a -> b -> c) -> (a, b) -> c  """
-    return lambda tpl: func(tpl[0], tpl[1])
 
-def uncurry3(func): 
-    return lambda tpl3: func(tpl3[0], tpl3[1], tpl3[2])    
-    
 flip = lambda f: lambda x, y: f(y, x)
+
 
 def zipWith(func, stream1, stream2):
     return map(lambda e: func(e[0], e[1]), zip(stream1, stream2))
 
+
 def take(n, iterable):
-    
     for i in range(n):
-        
+
         try:
-            yield next(iterable)            
+            yield next(iterable)
         except:
             pass
 
 
-def foldr(function, initial, iterable):
-    return reduce(function, iterable, initial)
-       
 def takeWhile(predicate, stream):
-            
     while True:
-        
-        x = next(stream)        
-        
+
+        x = next(stream)
+
         if not predicate(x):
             break
-            
+
         try:
             yield x
         except StopIteration:
             break
 
+
 def dropWhile(predicate, stream):
-            
     while True:
-        
-        x = next(stream)        
-        
-        if not predicate(x):                   
+
+        x = next(stream)
+
+        if not predicate(x):
             try:
                 yield x
             except StopIteration:
                 break
-
 
 
 def flat(stream):
@@ -265,55 +251,63 @@ def flat_mapl(function, stream):
 
 
 def iterate(f, x):
-    
     y = x
-    
-    while True: 
-        
-        try:       
+
+    while True:
+
+        try:
             yield y
             y = f(y)
         except StopIteration:
             break
-        
+
+
 def tail(stream):
     next(stream)
-    return stream        
+    return stream
+
 
 def last(stream):
     return next(reversed(tuple(stream)))
 
+
 def head(stream):
     return next(stream)
 
+
 def drop(n, stream):
-    
     for i in range(n):
         next(stream)
-    
+
     return stream
+
 
 def foreach(function, iterable):
     for element in iterable:
-        function(next(iterable))    
+        function(next(iterable))
+
 
 def root(a):
-        
-    f = lambda x: 0.5*(a/x + x)    
+    f = lambda x: 0.5 * (a / x + x)
     return last(take(10, iterate(f, 1.0)))
 
 
 def pairs(alist):
     return zip(alist, tail(iter(alist)))
 
+
+def pairsl(alist):
+    return list(zip(alist, tail(iter(alist))))
+
+
 def lagdiff(alist):
     ialist = iter(alist)
-    return to_list(zipWith (lambda x, y: y-x,  ialist, tail(ialist)))
+    return to_list(zipWith(lambda x, y: y - x, ialist, tail(ialist)))
 
-def growth(alist): 
+
+def growth(alist):
     ialist = iter(alist)
-    return to_list(zipWith (lambda x, y: (y-x)/x,  ialist, tail(ialist)))
-
+    return to_list(zipWith(lambda x, y: (y - x) / x, ialist, tail(ialist)))
 
 
 def infinite(start=0):
@@ -321,31 +315,35 @@ def infinite(start=0):
 
     while True:
         yield idx
-        idx +=1
+        idx += 1
+
 
 def infinite_alternate(start=0):
     idx = start
     sig = 1
 
     while True:
-        yield idx*sig
-        idx +=1
+        yield idx * sig
+        idx += 1
         sig *= -1
 
-is_even = lambda n: n % 2 == 0
-is_odd  = lambda n: n % 2 == 1
+
+
 
 @curry
-def allmap(predicate, iterable):    
+def allmap(predicate, iterable):
     return all(map(predicate, iterable))
 
-@curry    
-def anymap(predicate, iterable):    
+
+@curry
+def anymap(predicate, iterable):
     return any(map(predicate, iterable))
+
 
 @curry
 def mapf(function, stream):
     return map(function, stream)
+
 
 @curry
 def filterf(function, stream):
@@ -356,10 +354,50 @@ def filterf(function, stream):
 def filterl(function, stream):
     return list(filter(function, stream))
 
+
 @curry
 def mapl(function, stream):
     return list(map(function, stream))
 
+
+@curry
+def foldl(f, x0, alist):
+    """
+    In [51]: foldr(lambda a, b: a + b*16.0, 0, [13, 0, 1, 3])
+    Out[51]: 12557.0
+    
+    λ> foldr (\b c -> b + 16*c) 0 [13, 0, 1, 3] 
+    12557
+    λ> 
+    """
+    acc = x0
+
+    for x in alist:
+        acc = f(acc, x)
+    return acc
+
+
+@curry
+def foldr(f, x0, alist):
+    """
+    In [51]: foldr(lambda a, b: a + b*16.0, 0, [13, 0, 1, 3])
+    Out[51]: 12557.0
+    
+    λ> foldr (\b c -> b + 16*c) 0 [13, 0, 1, 3] 
+    12557
+    λ> 
+    """
+    return reduce(lambda x, y: f(y, x), reversed(alist), x0)
+
+
+@curry
+def foldl1(f, alist):
+    return reduce(f, alist)
+
+
+@curry
+def foldr1(f, alist):
+    return reduce(lambda x, y: f(y, x), reversed(alist), x0)
 
 
 @curry
@@ -394,6 +432,7 @@ def starmap(function, arglist):
     """
     return (function(*params) for params in arglist)
 
+
 def mainf(function):
     """
     Decorator to set the function
@@ -406,8 +445,8 @@ def mainf(function):
         print("Hello World")
     
     """
-    
-    if __name__ == "__main__" : 
+
+    if __name__ == "__main__":
         function()
 
 
@@ -416,17 +455,32 @@ def profile(function):
     Measuere the execution time.
     of a function.
     """
-    
-    def _ (*args, **kwargs):
+
+    def _(*args, **kwargs):
         tstart = time.time()
         result = function(*args, **kwargs)
-        tend   = time.time()
-        
+        tend = time.time()
+
         print("Time taken: ", (tend - tstart))
         return result
-    
+
     return _
-    
+
+def compose_pipe(*funclist):
+    def _(args):
+        value = args
+
+        for f in funclist:
+
+            #print("value = ", value)
+
+            value = f(value)
+
+        return value
+
+    return _
+
+
 def compose(*funclist):
     """
     Returns the composition of a list of functions, where each function
@@ -469,34 +523,9 @@ def compose(*funclist):
 
     return _
 
-@curry
-def call_with(arguments, function):  
-    """
-    Example:
-        
-        >>> def f(x, y): return x*y - 10*x/y
-        >>> call_with((2, 4))
-        <__main__.CurriedFunction at 0xb254f0ac>
-        
-        >>> call1 = call_with((2, 4))
 
-        >>> call2 = call_with((6, 8))
-
-        >>> call1(f)
-        3.00000
-
-        >>> call2(f)
-        40.50000
-
-        >>> list(map(call1, (f, f2)))
-        [3.00000, 6]
-
-        >>> list(map(call2, (f, f2)))
-        [40.50000, 14]
-            
-    """
-    return function(*arguments)
-    
+def methodcaller(method, *args, **kwargs):
+    return lambda obj: getattr(obj, method)(*args, **kwargs)
 
 
 def sliding_window(array, k):
@@ -525,7 +554,7 @@ def sliding_window(array, k):
 
 
 @curry
-def nth(n, stream):
+def nths(n, stream):
     """
 
     nth(N, List) -> Elem
@@ -535,13 +564,24 @@ def nth(n, stream):
 
     Idea from: http://erldocs.com/17.3/stdlib/lists.html
     """
+
     i = 0
     while i < n:
-        next(stream) # Consume stream
+        next(stream)  # Consume stream
         i += 1
     return next(stream)
-    
-        
+
+
+@curry
+def nth(n, alist):
+    return alist[n]
+
+
+@curry
+def slice(i1, i2, alist):
+    return alist[i1:i2]
+
+
 def retry(call, tries, errors=Exception):
     for attempt in range(tries):
         try:
@@ -621,20 +661,8 @@ def in_parallel(function_list):
     return pfun
 
 
-def caller(function, args=(), kwargs=None):
+def delaycall(function, args=(), kwargs=None):
     """
-    :param function: Function object
-    :pram argds:     Function arguments tuple
-
-    In [11]: def f(x, y): return x+y
-
-    In [12]: call(f, (20, 100))()
-    Out[12]: 120
-
-    In [14]: def f2(): print("hello world")
-
-    In [15]: call(f2)
-    hello world
     """
     if not kwargs:
         kwargs = {}
@@ -659,7 +687,7 @@ def unique(lst):
 def to_value():
     """ Dummy function """
     pass
-    
+
 
 class Stream(object):
     """
@@ -683,34 +711,34 @@ class Stream(object):
 
     
     """
-    
+
     def __init__(self, value=None):
         self.value = value
-        
+
     def bind(self, function):
         return Stream(function(self.value))
-         
+
     def __rshift__(self, other):
-        
-        
+
+
         if other == to_value:
             return self.value
-        
+
         if other == list:
             return list(self.value)
 
         elif hasattr(other, "__call__"):
             #p = Pipe(list(map(other, self.value)))
-            p = Stream( other(self.value))
-        
+            p = Stream(other(self.value))
+
         else:
             p = Stream(other)
 
         return p
-        
+
     def __lshift__(self, other):
-        
-        return list(other)
+
+        return Stream(other)
 
 
 class Operator():
@@ -892,89 +920,3 @@ class Operator():
 X = Operator()
 
 
-#---------------------------------------------------#
-
-def until_converge(stream, eps, itmax):
-    
-    a = next(stream)
-    b = next(stream)
-    
-    n = 1
-
-    while True:
-        
-        if n > itmax:
-            break
-        
-        if abs((b-a)/a) < eps:
-            break
-
-        yield a
-        yield b
-
-        a = b
-        b = next(stream)
-        n = n + 1
-        
-    print("n = ", n)
-
-def summation(stream):
-    
-    s = 0
-    while True:       
-        s += next(stream)
-        yield s
-    
-def aitken(stream):
-    Sn  = next(stream)
-    Sn1 = next(stream)
-    Sn2 = next(stream)
-
-    
-    while True:
-    
-        s = Sn2 - (Sn2 - Sn1)**2 / (Sn2 - 2*Sn1 + Sn)
-        Sn, Sn1, Sn2 = Sn1, Sn2, next(stream)
-        yield s
-        
-def infinite_serie(term, inext, start):
-    
-    i = start
-    
-    while True:
-        yield term(i)
-        i = inext(i)
-        
-
-def fixed_point(iterator, eps, itmax, guess):
-
-    stream = iterate(iterator, guess)   
-    return last(until_converge(stream, eps, itmax))
-    
-
-def nsolver(f, df, guess, eps, itmax):
-    
-    iterator = lambda x: x - f(x)/df(x)   
-    return fixed_point(iterator, eps, itmax, guess)
-    
-
-def pi_serie():
-    
-    s = 0
-    i = 1
-    k = 0
-    
-    while True:
-        
-        s = s + i*4/(2*k+1)
-        i = -1 * i
-        k = k + 1
-        yield s
-        
-
-def fib(n):
-    
-    if n == 0 or n == 1:
-        return 1
-    else:
-        return fib(n-1) + fib(n-2)
