@@ -49,6 +49,7 @@ class CurriedFunction(object):
 
         self._funct = funct
         self._nargs = self._funct.__code__.co_argcount
+        #self._nargs = self._funct.__code__.nlocals
         self._argvs = argvalues
 
         # setattr(self, "__doc__", _funct.__doc__)
@@ -287,9 +288,6 @@ def foreach(function, iterable):
         function(next(iterable))
 
 
-def root(a):
-    f = lambda x: 0.5 * (a / x + x)
-    return last(take(10, iterate(f, 1.0)))
 
 
 def pairs(alist):
@@ -328,7 +326,7 @@ def infinite_alternate(start=0):
         sig *= -1
 
 
-
+zipl = lambda *atuple: list(zip(*atuple))
 
 @curry
 def allmap(predicate, iterable):
@@ -524,8 +522,13 @@ def compose(*funclist):
     return _
 
 
-def methodcaller(method, *args, **kwargs):
-    return lambda obj: getattr(obj, method)(*args, **kwargs)
+def mcall(method):
+    """
+    Call a method from an object:
+    """
+    def _(*args, **kwargs):
+        return lambda obj: getattr(obj, method)(*args, **kwargs)
+    return _
 
 
 def sliding_window(array, k):
@@ -554,7 +557,7 @@ def sliding_window(array, k):
 
 
 @curry
-def nths(n, stream):
+def nths(stream, n):
     """
 
     nth(N, List) -> Elem
@@ -573,12 +576,12 @@ def nths(n, stream):
 
 
 @curry
-def nth(n, alist):
+def nth(alist, n):
     return alist[n]
 
 
 @curry
-def slice(i1, i2, alist):
+def slice(alist, i1, i2):
     return alist[i1:i2]
 
 

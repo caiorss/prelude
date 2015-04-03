@@ -3,6 +3,8 @@
 
 #---------------------------------------------------#
 
+from prelude import last, take, iterate
+
 def until_converge(stream, eps, itmax):
 
     a = next(stream)
@@ -87,3 +89,8 @@ def fib(n):
         return 1
     else:
         return fib(n-1) + fib(n-2)
+
+
+def root(a):
+    f = lambda x: 0.5 * (a / x + x)
+    return last(take(10, iterate(f, 1.0)))
