@@ -1,9 +1,9 @@
 from .monad import Nothing, Just
 from .prelude import curry
 
-#----------------------------------#
-#           DICTIONARY             #
-#----------------------------------#
+#####################################
+# DICTIONARY                        #
+#####################################
 
 def dictzip(keys, values):
     """
@@ -15,7 +15,6 @@ def dictzip(keys, values):
 
 def transpose(matrix):
     return list(zip(*matrix))
-
 
 
 def mapdict_values(function, dic):
@@ -87,7 +86,6 @@ def reverse_dict(dic):
     return dictzip(*reverse(unzip_l(dic.items())))
 
 
-
 def get(property):
     """
     >>> user =  {'name': 'Bemmu', 'uid': '297200003'}
@@ -157,29 +155,29 @@ def pluck(property):
     return fun
 
 
-
-
 @curry
 def bind_maybe(ma, f_a_to_mb):
     return f_a_to_mb(ma.from_just)
 
+
 @curry
-def lookup(key, dic):   
-    
+def lookup(key, dic):
     if not isinstance(dic, dict):
         return Nothing
-    
+
     if dic.get(key):
         return Just(dic.get(key))
     else:
         return Nothing
+
+
 @curry
 def lookup_nested(keys, dic):
     ikeys = iter(keys)
-    
+
     value = lookup(next(ikeys), dic)
-    
-    for key in ikeys:        
-        value = value.bind(lookup(key))   
+
+    for key in ikeys:
+        value = value.bind(lookup(key))
     return value
     

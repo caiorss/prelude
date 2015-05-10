@@ -10,26 +10,6 @@
 #
 #
 #
->>> piserie  = summation(infinite_serie(lambda k: 8/(k*(k+2)), lambda i: i+4, 1))
-
->>> last(converge(piserie, 1e-6, 1e9))
-n =  399
-    3.14034
-
-
->>> piserie  = summation(infinite_serie(lambda k: 8/(k*(k+2)), lambda i: i+4, 1))
-
->>> last(converge(aitken(piserie), 1e-10, 1e9))
-n =  6200
-    3.14155
-
->>> piserie  = summation(infinite_serie(lambda k: 8/(k*(k+2)), lambda i: i+4, 1))
-
->>> last(converge(piserie, 1e-10, 1e9))n =  39894
-    3.14158
-
-
-
 """
 from functools import reduce
 import itertools
@@ -75,9 +55,6 @@ class CurriedFunction(object):
             newfunctor = CurriedFunction(self._funct, argvalues)
             return newfunctor
 
-
-def help2(obj):
-    print(obj.__doc__)
 
 
 def curry(function):
@@ -285,173 +262,6 @@ def uncurry(function):
 
 flip = lambda f: lambda x, y: f(y, x)
 
-
-def zipWith(func, stream1, stream2):
-    return map(lambda e: func(e[0], e[1]), zip(stream1, stream2))
-
-
-def take(n, iterable):
-    for i in range(n):
-
-        try:
-            yield next(iterable)
-        except:
-            pass
-
-
-def takel(n, iterable):
-    
-    result = []
-    
-    for i in range(n):
-
-        try:
-            result.append(next(iterable))
-        except:
-            pass
-
-    return result
-
-def takeWhile(predicate, stream):
-    while True:
-
-        x = next(stream)
-
-        if not predicate(x):
-            break
-
-        try:
-            yield x
-        except StopIteration:
-            break
-
-
-def takeWhileNext(predicate, stream):
-    """
-    Returns one more iteration after reach the predicate
-    
-    """
-    while True:
-
-        x = next(stream)
-        #print("x = ", x)
-        
-        if not predicate(x):
-            #print("Last yield")
-            #print("x = ", x)
-            yield x
-            break
-
-        try:
-            yield x
-        except StopIteration:    
-            break
-   
-    
-       
-        
-    
-
-
-def dropWhile(predicate, stream):
-    while True:
-
-        x = next(stream)
-
-        if not predicate(x):
-            try:
-                yield x
-            except StopIteration:
-                break
-
-
-def flat(stream):
-    return itertools.chain(*stream)
-
-
-@curry
-def flat_mapl(function, stream):
-    return flat(map(function, stream))
-
-
-def iterate(f, x):
-    y = x
-
-    while True:
-
-        try:
-            yield y
-            y = f(y)
-        except StopIteration:
-            break
-
-
-def tail(stream):
-    next(stream)
-    return stream
-
-
-def lastl(alist):
-    return alist[-1]
-
-def last(stream):
-    """
-    Return last element of generator 
-    and discard the remaining.
-    """
-       
-    current = None
-    
-    while True:
-        
-        try:
-            current = next(stream)
-        except StopIteration:
-            return current
-            
-    
-
-def head(stream):
-    return next(stream)
-
-
-def drop(n, stream):
-    for i in range(n):
-        next(stream)
-
-    return stream
-
-
-def foreach(function, iterable):
-    for element in iterable:
-        function(next(iterable))
-
-
-
-
-def pairs(alist):
-    return zip(alist, tail(iter(alist)))
-
-
-def pairsl(alist):
-    return list(zip(alist, tail(iter(alist))))
-
-
-def lagdiff(alist):
-    ialist = iter(alist)
-    return to_list(zipWith(lambda x, y: y - x, ialist, tail(ialist)))
-
-
-def growth(alist):
-    ialist = iter(alist)
-    return to_list(zipWith(lambda x, y: (y - x) / x, ialist, tail(ialist)))
-
-
-
-
-
-
-
 zipl = lambda *atuple: list(zip(*atuple))
 
 @curry
@@ -521,7 +331,7 @@ def foldl1(f, alist):
 
 @curry
 def foldr1(f, alist):
-    return reduce(lambda x, y: f(y, x), reversed(alist), x0)
+    return reduce(lambda x, y: f(y, x), reversed(alist))
 
 
 @curry
@@ -590,7 +400,18 @@ def profile(function):
 
     return _
 
-def compose_pipe(*funclist):
+def cpipe(*funclist):
+    """
+    Compose a list of functions
+
+    f = cpipe (f1, f2, f3, f4)
+
+    f(x) = f4( f3( f2( f1 x ))))
+
+    :param funclist:
+    :return:
+    """
+
     def _(args):
         value = args
 
@@ -648,6 +469,45 @@ def compose(*funclist):
     return _
 
 
+def juxt(funclist):
+    """
+    Map a list of functions to an array
+
+    :param funclist: List of functions  [ f0, f1, f2 .. fk]
+    :param array:    List of values     x= [ x0, x1, x2, ... xn]
+    :return:         [map(f0, x), map(f1, x), ... map(fn, x)]
+
+
+    juxt takes two or more functions and returns a function that returns
+    a vector containing the results of applying each function on its
+    arguments. In other words, ((juxt a b c) x) => [(a x) (b x) (c x)].
+    This is useful whenever you want to represent the results of using 2
+    different functions on the same argument(s), all at once rather than separately:
+
+    Example:
+
+    >>> from m2py import functional as f
+    >>>
+    >>> x = [1, 2, 3, 4, 5]
+    >>> fun1 = lambda x: x**2 - 10.0
+    >>> fun2 = lambda x: 10*x + 8
+    >>> fun3 = lambda x: 100.0/x - 4
+    >>> fun= [fun1, fun2, fun3 ]
+    >>> f.joinfuncs(fun, x)
+    [[-9.0, -6.0, -1.0, 6.0, 15.0],
+     [18, 28, 38, 48, 58],
+     [96.0, 46.0, 29.333333333333336, 21.0, 16.0]]
+
+
+    Note: Function taken from cloujure and R
+    https://clojuredocs.org/clojure.core/juxt
+    """
+
+    def _(x):
+        return [f(x) for f in funclist]
+
+    return _
+
 def mcall(method):
     """
     Call a method from an object:
@@ -663,7 +523,6 @@ def sliding_window(array, k):
 
     Example:
 
-    >>> from m2py import functional as f
     >>>
     >>> x = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9']
     >>>
@@ -706,23 +565,6 @@ def nths(n, alist):
     return alist[n]
 
 
-@curry
-def nthst(stream, n):
-    """
-
-    nth(N, List) -> Elem
-
-    > lists:nth(3, [a, b, c, d, e]).
-    c
-
-    Idea from: http://erldocs.com/17.3/stdlib/lists.html
-    """
-
-    i = 0
-    while i < n:
-        next(stream)  # Consume stream
-        i += 1
-    return next(stream)
     
 @curry
 def column_rows(array_of_rows, n):
@@ -748,101 +590,6 @@ def slice(alist, i1, i2):
     return alist[i1:i2]
 
 
-def retry(call, tries, errors=Exception):
-    for attempt in range(tries):
-        try:
-            return call()
-        except errors:
-            if attempt + 1 == tries:
-                raise
-
-
-def ignore(call, errors=Exception):
-    try:
-        return call()
-    except errors:
-        return None
-
-
-def in_sequence(function_list):
-    """
-    Create a new function that execute the functions
-    in the list in sequence.
-
-    :param function_list: List of functions
-    :return:              Function
-
-    """
-
-    def seqfun():
-        for f in function_list: f()
-
-    return seqfun
-
-import threading
-
-def in_parallel(function_list):
-    """
-    Create a new function that execute the functions
-    in the list in parallel (thread)
-
-    :param function_list: List of functions
-    :return:              Function
-
-    Example:
-
-    >>> from m2py import functional as funcp
-    >>>
-    >>> import time
-    >>>
-    >>> def print_time(thname, delay):
-    ...   for i in range(5):
-    ...      time.sleep(delay)
-    ...      print (thname, " ", time.ctime(time.time()))
-    >>>
-    >>> def make_print_time(name, delay): return lambda : print_time(name, delay)
-    >>>
-    >>> t1 = make_print_time("thread1", 1)
-    >>> t2 = make_print_time("thread2", 2)
-    >>> t3 = make_print_time("thread3", 3)
-    >>> t4 = make_print_time("thread4", 4)
-    >>>
-    >>> thfun = funcp.in_parallel([t1, t2, t3, t4])
-    >>> thfun()
-    >>> thread1   Fri Dec 26 23:40:29 2014
-    thread2   Fri Dec 26 23:40:30 2014
-    thread1   Fri Dec 26 23:40:30 2014
-    thread3   Fri Dec 26 23:40:31 2014
-    thread1   Fri Dec 26 23:40:31 2014
-    thread4   Fri Dec 26 23:40:32 2014
-    thread2   Fri Dec 26 23:40:32 2014
-    thread1   Fri Dec 26 23:40:32 2014
-    thread1   Fri Dec 26 23:40:33 2014
-    ...
-    """
-    nThtreads = len(function_list)
-    
-    results = [None] * nThtreads
-    
-    def adapter(func, idx):
-        results[idx] = func()
-
-    
-    for idx, func in enumerate(function_list):
-        t = threading.Thread(
-            target=adapter,
-            args = (func, idx)        
-        )
-        t.daemon = True
-        t.start()
-        t.join()
-        #thread.start_new_thread(adapter, (func, idx))
-    
-    
-    
-    return results
-
-
 def delaycall(function, args=(), kwargs=None):
     """
     """
@@ -866,241 +613,33 @@ def unique(lst):
     return sort(set(lst))
 
 
-#---------------------------------------------------#
 
-def to_value():
-    """ Dummy function """
-    pass
-
-
-class Stream(object):
+def find_index(predicate, List):
     """
-    Stream Monad ( Equivalent to List monaf)
-    
-    >>>  Stream(10.23) >>  (lambda x: x**2) >> (lambda y: y/10) >> to_value 
-    10.46529
-    
-    >>>  Stream(range(8)) >>  mapf(lambda x: x**2) >> mapf(lambda y: y/10) >> to_list 
-    [0.00000, 0.10000, 0.40000, 0.90000, 1.60000, 2.50000, 3.60000, 4.90000]
-    
-    
-    >>>  Stream(range(8)) >>  mapf(add(10)) >> mapf(mul(8.5)) >> to_list    [85.00000,
-    93.50000,
-    102.00000,
-    110.50000,
-    119.00000,
-    127.50000,
-    136.00000,
-    144.50000]
+    (a → Boolean) → [a] → [Number]
 
-    
+    Return the index of first element that satisfy the
+    predicate
     """
-
-    def __init__(self, value=None):
-        self.value = value
-
-    def bind(self, function):
-        return Stream(function(self.value))
-
-    def __rshift__(self, other):
+    for i, x in enumerate(List):
+        if predicate(x):
+            return i
 
 
-        if other == to_value:
-            return self.value
-
-        if other == list:
-            return list(self.value)
-
-        elif hasattr(other, "__call__"):
-            #p = Pipe(list(map(other, self.value)))
-            p = Stream(other(self.value))
-
-        else:
-            p = Stream(other)
-
-        return p
-
-    def __lshift__(self, other):
-
-        return Stream(other)
-
-
-class Operator():
+def find_indices(predicate, List):
     """
-    Operator to Generate Lambda expressions
+    Returns an array of all the indices of the
+    elements which pass the predicate. Returns an
+    empty list if the predicate never passes.
+    find-indices even, [1 2 3 4] #=> [1, 3]
 
-    Scala-style lambdas definition
-
-    Idea from: https://github.com/kachayev/fn.py#fnpy-enjoy-fp-in-python
-
-    Example:
-
-    In [1]: from functional import X, mapl, filterl
-
-    In [2]: list(filter(X  < 10, [9, 10, 11]))
-    Out[2]: [9]
-
-    In [4]: mapl(X ** 2, [1, 2, 3, 4, 5, 6, 7])
-    Out[4]: [1, 4, 9, 16, 25, 36, 49]
-
-    In [2]: mapl(X  / 10, [9, 10, 11])
-    Out[2]: [0.9, 1.0, 1.1]
-
-    In [3]:  mapl( 10/X, [9, 10, 11])
-    Out[3]: [1.1111111111111112, 1.0, 0.9090909090909091]
-
+    >>> find_indices(lambda x: x > 2, [1, 2, 30, 404, 0, -1, 90])
+    [2, 3, 6]
     """
+    result = []
 
-    """
-    Scala-style lambdas definition
+    for i, x in enumerate(List):
+        if predicate(x):
+            result.append(i)
 
-    Idea from: https://github.com/kachayev/fn.py#fnpy-enjoy-fp-in-python
-
-    Example:
-
-    In [1]: from functional import X, mapl, filterl
-
-    In [2]: list(filter(X  < 10, [9, 10, 11]))
-    Out[2]: [9]
-
-    In [4]: mapl(X ** 2, [1, 2, 3, 4, 5, 6, 7])
-    Out[4]: [1, 4, 9, 16, 25, 36, 49]
-
-    In [2]: mapl(X  / 10, [9, 10, 11])
-    Out[2]: [0.9, 1.0, 1.1]
-
-    In [3]:  mapl( 10/X, [9, 10, 11])
-    Out[3]: [1.1111111111111112, 1.0, 0.9090909090909091]
-
-    """
-
-    def __add__(self, other):
-
-        if isinstance(other, Operator):
-            return lambda x, y: x + y
-        return lambda x: x + other
-
-    def __radd__(self, other):
-        if isinstance(other, Operator):
-            return lambda x, y: x + y
-        return lambda x: other + x
-
-    def __mul__(self, other):
-
-        if isinstance(other, Operator):
-            return lambda x, y: x * y
-        return lambda x: x * other
-
-    def __rmul__(self, other):
-
-        if isinstance(other, Operator):
-            return lambda x, y: x * y
-        return lambda x: x * other
-
-
-    def __sub__(self, other):
-        return lambda x: x - other
-
-    def __rsub__(self, other):
-        return lambda x: other - x
-
-
-    def __div__(self, other):
-        return lambda x: x / other
-
-    def __truediv__(self, other):
-        return lambda x: x / other
-
-    def __floordiv__(self, other):
-        return lambda x: x // other
-
-    def __rdiv__(self, other):
-        return lambda x: other / x
-
-    def __rtruediv__(self, other):
-        return lambda x: other / x
-
-    def __rfloordiv__(self, other):
-        return lambda x: other // x
-
-    def __pow__(self, other):
-        return lambda x: x ** other
-
-    def __rpow__(self, other):
-        return lambda x: other ** x
-
-    def __neg__(self):
-        return lambda x: -x
-
-    def __pos__(self):
-        return lambda x: x
-
-    def __abs__(self):
-        return lambda x: abs(x)
-
-    def __len__(self):
-        return lambda x: len(x)
-
-    def __eq__(self, other):
-        return lambda x: x == other
-
-    def __ne__(self, other):
-        return lambda x: x != other
-
-    def __lt__(self, other):
-        return lambda x: x < other
-
-    def __le__(self, other):
-        return lambda x: x <= other
-
-    def __gt__(self, other):
-        return lambda x: x > other
-
-    def __ge__(self, other):
-        return lambda x: x >= other
-
-    def __or__(self, other):
-        return lambda x: x or other
-
-    def __and__(self, other):
-        return lambda x: x and other
-
-    def __rand__(self, other):
-        return lambda x: other and x
-
-    def __ror__(self, other):
-        return lambda x: other or x
-
-    def __contains__(self, item):
-        return lambda x: item in x
-
-    def __int__(self):
-        return lambda x: int(x)
-
-    def __float__(self):
-        return lambda x: float(x)
-
-    def split(self, pattern=' '):
-        return lambda x: x.split(pattern)
-
-    def strip(self):
-        return lambda x: x.strip()
-
-    def map(self, function):
-        return lambda x: list(map(function, x))
-
-    def sum(self):
-        return lambda x: sum(x)
-
-    def key(self, keyname):
-        """Generate lambda expression for dictionary key """
-        return lambda x: x[keyname]
-
-    def item(self, it):
-        """Generate lambda function for list item """
-        return lambda x: x[it]
-
-
-X = Operator()
-
-
+    return result

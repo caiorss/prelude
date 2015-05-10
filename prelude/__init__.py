@@ -160,21 +160,22 @@ Examples:
 __author__ = "Caio Rodrigues Soares Silva"
 __email__ = "caiorss.rodrigues@gmail.com"
 
-from .prelude import (head, tail, last, lastl, drop, foreach, flat,
-                      mapl, filterl, compose, identity, constant)
 
-from .prelude import zipl, mapf, mapl, filterf, filterl, zipWith
-from .prelude import foldr, foldl, foldr1, foldl1, compose_pipe
-from .prelude import iterate, take, takel, takeWhile, takeWhileNext, dropWhile
-from .prelude import pairs, pairsl
+from .Operator import X
+from . import Lazy
+from .Chain import Chain
+
+from .ControlFlow import ifelse, ifelseDo
+
+
+from .prelude import mapl, filterl, compose, cpipe, juxt, identity, constant
+from .prelude import zipl, mapf, mapl, filterf, filterl
+from .prelude import foldr, foldl, foldr1, foldl1
 
 # Special Functios and Objects
 from .prelude import profile, entryPoint
-from .prelude import Operator
-
 # Stream Functions
-from .prelude import curry, uncurry, Stream, to_value, to_list, reverse, reversel, mcall
-
+from .prelude import curry, uncurry, to_list, reverse, reversel, mcall
 # Type Checking Functions
 from .prelude import (is_num, is_int, is_float, is_dict, is_str,
                       is_function, is_empty, is_gen, is_none, is_tuple, is_list)
@@ -186,9 +187,6 @@ from .prelude import (add, mul, sub, div, mod, divi, pow, contains,
 # Comparator predicate functions
 from .prelude import lt, le, gt, ge, eq, neq
 
-# Parallalel
-from .prelude import in_parallel
-
 from .prelude import unique
 
 # String Functions
@@ -196,5 +194,3 @@ from .prelude import unique
 from .string import joinstr, splitstr, has_suffix, has_prefix, strip
 
 from .monad import Maybe, Just, Nothing
-
-X = Operator()
