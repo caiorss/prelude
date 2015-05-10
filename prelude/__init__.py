@@ -142,10 +142,10 @@ Examples:
     [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 >>> # Higher order funtions ending in f retuns a generator/stream object
->>>  p.mapf(p.sub(20), range(10, 30)) 
+>>>  p.mapf(p.sub(20), range(10, 30))
 
 >>> # Filter elements greater than zero le(0) = 
->>> # (\x y -> x < y) 0 y ==:> (\y -> 0 < y) y 
+>>> # (\\ x y -> x < y) 0 y ==:> (\\ y -> 0 < y) y
 >>>
 >>> p.filterl(p.le(0), p.mapf(p.sub(20), range(10, 30)))
     [1, 2, 3, 4, 5, 6, 7, 8, 9]
