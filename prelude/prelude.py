@@ -120,6 +120,11 @@ def is_num(var):
     """
     return isinstance(var, int) or isinstance(var, float)
 
+def is_int(var):
+    return isinstance(var, int)
+
+def is_float(var):
+    isinstance(var, float)
 
 def is_dict(var):
     return isinstance(var, dict)
@@ -162,14 +167,21 @@ def add(x, y):
 
 
 @curry
-def sub(y, x):
+def sub(x, y):
     return y - x
 
 
 @curry
-def div(y, x):
+def div(x, y):
     return y / x
 
+@curry
+def divi(x, y):
+    return y // x
+
+@curry
+def mod(x, y):
+    return y % x
 
 @curry
 def mul(x, y):
@@ -186,14 +198,85 @@ def contains(lst, value):
     return value in lst
 
 
-# curry :: ((a, b) -> c) -> a -> b -> c
+@curry
+def lt(x, y):
+    """
+    leq :: a -> a -> bool
+    Less than
+    
+    :return: (x < y)            
+    """
+    return x < y
+    
+@curry 
+def le(x, y):
+    """
+    leq :: a -> a -> bool
+    Less or equal
+    
+    :return: (x <= y)
+    """
+    return x > y
+
+@curry
+def gt(x, y):
+    """
+    gt :: a -> a -> bool
+    Greater than
+    
+    :return: x > y
+    """
+    return x > y
+    
+
+@curry
+def ge(x, y):
+    """
+    Greater or equal
+    gt :: a -> a -> bool
+      
+    :return: x >= y
+    """
+    return x >= y
+
+@curry
+def eq(x, y):
+    """
+    Equal
+    eql :: a -> a -> bool
+    
+    :return: x == y
+    """
+    return x == y
+    
+@curry 
+def neq(x, y):
+    """
+    Not equal
+    neq :: a -> a -> bool
+    
+    :return: x != y
+    """
+
 
 def identity(x):
+    """
+    Identity fucntion:
+    
+    identity :: a -> a
+    identity x = x
+    """
     return x
 
 
-def constant(constant):
-    return lambda *args, **kwargs: constant
+def constant(a):
+    """
+    Constant function
+    
+    constant :: a -> b -> a
+    constant(a, b) = a
+    """
+    return lambda b: a
 
 
 def uncurry(function):
@@ -216,6 +299,19 @@ def take(n, iterable):
             pass
 
 
+def takel(n, iterable):
+    
+    result = []
+    
+    for i in range(n):
+
+        try:
+            result.append(next(iterable))
+        except:
+            pass
+
+    return result
+
 def takeWhile(predicate, stream):
     while True:
 
@@ -228,6 +324,33 @@ def takeWhile(predicate, stream):
             yield x
         except StopIteration:
             break
+
+
+def takeWhileNext(predicate, stream):
+    """
+    Returns one more iteration after reach the predicate
+    
+    """
+    while True:
+
+        x = next(stream)
+        #print("x = ", x)
+        
+        if not predicate(x):
+            #print("Last yield")
+            #print("x = ", x)
+            yield x
+            break
+
+        try:
+            yield x
+        except StopIteration:    
+            break
+   
+    
+       
+        
+    
 
 
 def dropWhile(predicate, stream):
@@ -268,9 +391,25 @@ def tail(stream):
     return stream
 
 
-def last(stream):
-    return next(reversed(tuple(stream)))
+def lastl(alist):
+    return alist[-1]
 
+def last(stream):
+    """
+    Return last element of generator 
+    and discard the remaining.
+    """
+       
+    current = None
+    
+    while True:
+        
+        try:
+            current = next(stream)
+        except StopIteration:
+            return current
+            
+    
 
 def head(stream):
     return next(stream)
@@ -308,22 +447,9 @@ def growth(alist):
     return to_list(zipWith(lambda x, y: (y - x) / x, ialist, tail(ialist)))
 
 
-def infinite(start=0):
-    idx = start
-
-    while True:
-        yield idx
-        idx += 1
 
 
-def infinite_alternate(start=0):
-    idx = start
-    sig = 1
 
-    while True:
-        yield idx * sig
-        idx += 1
-        sig *= -1
 
 
 zipl = lambda *atuple: list(zip(*atuple))
@@ -431,7 +557,7 @@ def starmap(function, arglist):
     return (function(*params) for params in arglist)
 
 
-def mainf(function):
+def entryPoint(function):
     """
     Decorator to set the function
     as the main function.
@@ -556,8 +682,32 @@ def sliding_window(array, k):
     return zip(*[array[i:] for i in range(k)])
 
 
+
+
+
 @curry
-def nths(stream, n):
+def nth(alist, n):
+    """
+    Get the nth element of a list or tuple.
+    
+    nth :: [a] -> int -> a
+    nth(alist, n) = alist[n]
+    """
+    return alist[n]
+
+@curry 
+def nths(n, alist):
+    """
+    Get the nth element of a list or tuple.
+        
+    nth :: int -> [a] -> a
+    nth (n, alist) = alist[n]    
+    """    
+    return alist[n]
+
+
+@curry
+def nthst(stream, n):
     """
 
     nth(N, List) -> Elem
@@ -573,15 +723,28 @@ def nths(stream, n):
         next(stream)  # Consume stream
         i += 1
     return next(stream)
-
+    
+@curry
+def column_rows(array_of_rows, n):
+    return list(map(lambda row: row[n], array_of_rows))
 
 @curry
-def nth(alist, n):
-    return alist[n]
+def column_nth(n, array_of_rows):
+    return list(map(lambda row: row[n], array_of_rows))
 
+@curry
+def getat(attribute, object):
+    return getattr(object, attribute)
+    
 
 @curry
 def slice(alist, i1, i2):
+    """
+    slice the same as alist[i1:i2]
+    
+    slice :: [a] -> int -> int -> a
+    
+    """
     return alist[i1:i2]
 
 
@@ -616,6 +779,7 @@ def in_sequence(function_list):
 
     return seqfun
 
+import threading
 
 def in_parallel(function_list):
     """
@@ -656,12 +820,27 @@ def in_parallel(function_list):
     thread1   Fri Dec 26 23:40:33 2014
     ...
     """
+    nThtreads = len(function_list)
+    
+    results = [None] * nThtreads
+    
+    def adapter(func, idx):
+        results[idx] = func()
 
-    def pfun():
-        for func in function_list:
-            thread.start_new_thread(func, ())
-
-    return pfun
+    
+    for idx, func in enumerate(function_list):
+        t = threading.Thread(
+            target=adapter,
+            args = (func, idx)        
+        )
+        t.daemon = True
+        t.start()
+        t.join()
+        #thread.start_new_thread(adapter, (func, idx))
+    
+    
+    
+    return results
 
 
 def delaycall(function, args=(), kwargs=None):
@@ -680,7 +859,9 @@ def call(function, args=(), kwargs=None):
 
 def unique(lst):
     """
-    Remove repeated elements from an aray
+    Remove repeated elements from a list
+    
+    unique :: [a] -> [a]
     """
     return sort(set(lst))
 

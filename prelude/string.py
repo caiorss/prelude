@@ -4,6 +4,8 @@
 
 from .prelude import curry
 
+import re
+
 @curry
 def joinstr(strmid, stringsList):    
     return strmid.join(stringsList)
@@ -28,3 +30,5 @@ def has_prefix(prefix, string):
 @curry
 def has_suffix(suffix, string):
     return string.startswith(suffix)
+
+#substr = re.sub()
