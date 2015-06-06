@@ -511,7 +511,9 @@ def juxt(funclist):
 
 def mcall(method):
     """
-    Call a method from an object:
+    Returns a new function that calls a method of an object.
+    
+    mcall ::  str -> (obj.method: x -> y)
     """
     def _(*args, **kwargs):
         return lambda obj: getattr(obj, method)(*args, **kwargs)
@@ -588,7 +590,7 @@ def column_nth(n, array_of_rows):
     return list(map(lambda row: row[n], array_of_rows))
 
 @curry
-def getat(attribute, object):
+def attrib(attribute, object):
     return getattr(object, attribute)
     
 

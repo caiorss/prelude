@@ -183,7 +183,7 @@ from .prelude import (is_num, is_int, is_float, is_dict, is_str,
 
 # Operator Functions
 from .prelude import (add, mul, sub, div, mod, divi, pow, contains,
-                      nth, nths, column_nth, column_rows, slice, getat, flip)
+                      nth, nths, column_nth, column_rows, slice, attrib, flip)
 
 # Comparator predicate functions
 from .prelude import lt, le, gt, ge, eq, neq
