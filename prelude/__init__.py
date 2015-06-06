@@ -162,7 +162,7 @@ __email__ = "caiorss.rodrigues@gmail.com"
 
 
 from .Operator import X
-from . import Lazy
+# from . import Lazy
 from .Chain import Chain
 from .ControlFlow import ifelse, ifelseDo
 from . import Str

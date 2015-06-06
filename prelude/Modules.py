@@ -35,7 +35,7 @@ Examples:
 
 from . import prelude as p
 from . import Str
-from . import Dic
+from . import Dict
 from . import Chain
 
 __all__ = [ "Str", "List", "Obj", "Op", "Type", "Chain"]
@@ -138,7 +138,7 @@ class Obj(object):
 Obj.mcall  = p.mcall
 Obj.mcallm = p.mcallm
 Obj.attrib = p.attrib
-Obj.get    = Dic.get
+Obj.get    = Dict.get
 
 class Fp(object):
     """

@@ -186,5 +186,39 @@ The lambda operator is syntax sugar to create fast lambda functions.
 
 ```
 
+
+## Modules
+
+The submodule prelude.Modules implements a OCaml like module system.
+
+Example:
+
+```python
+>>> from prelude.Modules import (Fp, Obj, Op, List, Chain)
+
+>>> 
+
+>>> Chain([(10, 20), (40, 60), (80, 100), (20, 30)]) >> List.mapl(Fp.uncurry(Op.add)) >> sum
+    Chain : 360
+
+>>> 
+
+>>> Chain([(10, 20), (40, 60), (80, 100), (20, 30)]) \
+ ...    >> List.mapl(Fp.uncurry(Op.add)) \
+ ...    >> List.mapl(Op.mul(2)) \
+ ...    >> sum
+    Chain : 720
+
+>>> 
+
+>>> ( Chain([(10, 20), (40, 60), (80, 100), (20, 30)])
+ ...    .b(List.mapl(Fp.uncurry(Op.add)))
+ ...    .b(sum)
+ ...)
+    Chain : 360
+
+>>> 
+```
+
 ## Decorators
 

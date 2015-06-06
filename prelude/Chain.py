@@ -61,7 +61,7 @@ class Chain(object):
         return Chain(list(self.content))
 
     def __rshift__(self, function):
-        return Chain(function(self.content)
+        return Chain(function(self.content))
 
     def __str__(self):
         return "Chain : {}".format(self.content)
