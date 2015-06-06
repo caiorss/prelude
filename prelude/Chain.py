@@ -6,12 +6,20 @@ from . import Lazy
 
 
 class Chain(object):
+    
+    @classmethod
+    def get(cls, obj):
+        pass
 
     def __init__(self, content):
         self.content = content
 
+    
     def bind(self, func):
-
+        
+        if func == Chain.get:
+            return self.content
+                    
         if self.content is None:
             return Chain(None)
 
@@ -60,8 +68,8 @@ class Chain(object):
     def toList(self):
         return Chain(list(self.content))
 
-    def __rshift__(self, function):
-        return Chain(function(self.content))
+    #def __rshift__(self, function):
+        #return Chain(function(self.content))
 
     def __str__(self):
         return "Chain : {}".format(self.content)
@@ -72,3 +80,4 @@ class Chain(object):
 Chain.b = Chain.bind
 Chain.m = Chain.map
 Chain.s = Chain.select
+Chain.__rshift__ = Chain.bind

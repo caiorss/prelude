@@ -209,6 +209,14 @@ Example:
  ...    >> sum
     Chain : 720
 
+>>> Chain([(10, 20), (40, 60), (80, 100), (20, 30)]) \
+ ...    >> List.mapl(Fp.uncurry(Op.add)) \
+ ...    >> List.mapl(Op.mul(2)) \
+ ...    >> sum \
+ ...    >> Chain.get
+    720
+
+
 >>> 
 
 >>> ( Chain([(10, 20), (40, 60), (80, 100), (20, 30)])
@@ -218,6 +226,8 @@ Example:
     Chain : 360
 
 >>> 
+
+
 ```
 
 ## Decorators
