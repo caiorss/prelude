@@ -334,6 +334,12 @@ def foldr1(f, alist):
     return reduce(lambda x, y: f(y, x), reversed(alist))
 
 
+def tail(alist):
+    return alist[1:]
+
+def init(alist):
+    return alist[:-1]
+
 @curry
 def starmap(function, arglist):
     """
@@ -412,7 +418,7 @@ def cpipe(*funclist):
     :return:
     """
 
-    def _(args):
+    def _(*args, **kwargs):
         value = args
 
         for f in funclist:
@@ -446,15 +452,10 @@ def compose(*funclist):
 
     Compute inc(double(10)) = 21
 
-    >>>
-    >>> imoort functional as f
-    >>>
-    >>> inc = lambda x: x+1
-    >>> double = lambda x: x*2
-    >>>
     >>> f.compose(inc, double)(10)
     21
     """
+
     flist = list(funclist)
     flist.reverse()
 
@@ -516,6 +517,18 @@ def mcall(method):
         return lambda obj: getattr(obj, method)(*args, **kwargs)
     return _
 
+
+def mcallm(mehtod, *args, **kwargs):
+    """
+    Invoke method of object to given arguments
+
+    :param mehtod:  Method name
+    :param attrs:   Method arguments
+    :param kwargs:  Kwargs of method
+    :return:        A function that calls the o
+                    ject method with given arguments
+    """
+    return lambda obj: getattr(obj, mehtod)(*args, **kwargs)
 
 def sliding_window(array, k):
     """
@@ -643,3 +656,13 @@ def find_indices(predicate, List):
             result.append(i)
 
     return result
+
+def writeFile(filename, text):
+
+    fp = open(filename, "w")
+    fp.write(text)
+    fp.close()
+
+
+def readFile(filename):
+    return open(filename).read()

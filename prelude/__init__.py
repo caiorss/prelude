@@ -164,8 +164,9 @@ __email__ = "caiorss.rodrigues@gmail.com"
 from .Operator import X
 from . import Lazy
 from .Chain import Chain
-
 from .ControlFlow import ifelse, ifelseDo
+from . import Str
+from . import monad
 
 
 from .prelude import mapl, filterl, compose, cpipe, juxt, identity, constant
@@ -175,7 +176,7 @@ from .prelude import foldr, foldl, foldr1, foldl1
 # Special Functios and Objects
 from .prelude import profile, entryPoint
 # Stream Functions
-from .prelude import curry, uncurry, to_list, reverse, reversel, mcall
+from .prelude import curry, uncurry, to_list, reverse, reversel, mcall, mcallm
 # Type Checking Functions
 from .prelude import (is_num, is_int, is_float, is_dict, is_str,
                       is_function, is_empty, is_gen, is_none, is_tuple, is_list)
@@ -189,8 +190,8 @@ from .prelude import lt, le, gt, ge, eq, neq
 
 from .prelude import unique
 
-# String Functions
-#
-from .string import joinstr, splitstr, has_suffix, has_prefix, strip
 
-from .monad import Maybe, Just, Nothing
+from .prelude import column_nth, column_rows, tail, init
+
+
+from .prelude import readFile, writeFile

@@ -1,4 +1,5 @@
-from .prelude import curry, last
+from .prelude import curry
+from .Lazy import last
 
 def sign(x):
     

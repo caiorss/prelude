@@ -22,7 +22,7 @@
 
 from prelude import curry
 from prelude.monad import Nothing, Maybe, Just
-from prelude.dic import lookup, lookup_nested
+from prelude.Dict import lookup, lookup_nested
 
 @curry
 def safediv(x, y):
